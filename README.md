@@ -7,6 +7,12 @@
 
 An advanced DBMS portfolio project designing and analyzing a grocery-store loyalty ecosystem across customers, stores, locations, promotions, rewards, loyalty tiers, and customer reviews.
 
+## Live Dashboard
+
+View the executive database case-study dashboard:
+
+[https://amy-way05.github.io/grocery-loyalty-dbms-sql-design/](https://amy-way05.github.io/grocery-loyalty-dbms-sql-design/)
+
 ## Executive Snapshot
 
 This project models a retail loyalty program as a relational database and demonstrates how SQL can support customer engagement, store performance, promotion planning, and reward strategy. The database contains **8 relational tables** and supports analysis across customer enrollment, loyalty tiers, promotions, rewards, store locations, and review activity.

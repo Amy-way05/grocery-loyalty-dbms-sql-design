@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grocery Loyalty DBMS & SQL Analytics</title>
+  <meta name="description" content="Executive SQL and DBMS dashboard for a grocery loyalty database design project.">
+  <style>
+    :root {
+      --ink: #182033;
+      --muted: #617089;
+      --line: #d7dfeb;
+      --surface: #f6f8fb;
+      --panel: #ffffff;
+      --navy: #1e3a5f;
+      --cyan: #0891b2;
+      --violet: #6d28d9;
+      --shadow: 0 18px 55px rgba(24, 32, 51, 0.1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--surface);
+      line-height: 1.55;
+    }
+    a { color: inherit; }
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      align-items: center;
+      padding: 56px 24px 40px;
+      color: white;
+      background:
+        linear-gradient(120deg, rgba(18, 28, 45, 0.94), rgba(8, 145, 178, 0.8)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.12) 0 1px, transparent 1px 120px),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.1) 0 1px, transparent 1px 92px),
+        #1e3a5f;
+    }
+    .hero-inner, .section-inner {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+    .eyebrow {
+      margin: 0 0 18px;
+      font-size: .8rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .76);
+    }
+    h1 {
+      max-width: 1040px;
+      margin: 0;
+      font-size: clamp(3rem, 7vw, 6.8rem);
+      line-height: .94;
+      letter-spacing: 0;
+    }
+    .hero-copy {
+      max-width: 780px;
+      margin: 26px 0 0;
+      font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+      color: rgba(255, 255, 255, .86);
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 34px;
+    }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid rgba(255, 255, 255, .36);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, .12);
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      backdrop-filter: blur(8px);
+    }
+    .button.primary {
+      border-color: white;
+      background: white;
+      color: var(--navy);
+    }
+    section { padding: 72px 24px; }
+    .section-title {
+      max-width: 780px;
+      margin-bottom: 28px;
+    }
+    .section-title h2 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+    .section-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+    .kpis, .erd, .query-modules, .deliverables {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .kpi, .panel, .entity, .metric-card, .deliverable {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .kpi {
+      padding: 22px;
+      min-height: 148px;
+    }
+    .kpi strong {
+      display: block;
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      line-height: 1;
+      color: var(--cyan);
+    }
+    .kpi span {
+      display: block;
+      margin-top: 10px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .panel, .entity, .metric-card, .deliverable { padding: 22px; }
+    .panel h3 { margin: 0 0 14px; font-size: 1.18rem; }
+    .panel p, .panel li, .entity span, .metric-card p, .deliverable span { color: var(--muted); }
+    .panel ul { margin: 0; padding-left: 20px; }
+    .bars { display: grid; gap: 12px; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) 2fr 60px;
+      gap: 12px;
+      align-items: center;
+      font-size: .92rem;
+      color: var(--muted);
+    }
+    .track {
+      height: 12px;
+      background: #e8edf5;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--violet));
+    }
+    .entity, .metric-card { min-height: 150px; }
+    .entity strong, .metric-card b { color: var(--navy); }
+    .entity span, .deliverable span {
+      display: block;
+      margin-top: 8px;
+      font-size: .92rem;
+    }
+    .deliverable {
+      min-height: 120px;
+      text-decoration: none;
+      font-weight: 800;
+    }
+    .footer {
+      padding: 32px 24px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      background: #fff;
+    }
+    @media (max-width: 900px) {
+      .kpis, .grid, .erd, .query-modules, .deliverables { grid-template-columns: 1fr; }
+      .hero { min-height: 86vh; }
+      .bar-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow">Database Design & SQL Analytics Dashboard</p>
+        <h1>Grocery Loyalty DBMS & SQL Analytics</h1>
+        <p class="hero-copy">A relational database case study for a grocery-store loyalty ecosystem, connecting customers, loyalty tiers, rewards, promotions, reviews, stores, and locations into an analysis-ready model.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#insights">View Executive Insights</a>
+          <a class="button" href="schema/create_tables.sql">Open Schema SQL</a>
+          <a class="button" href="https://github.com/Amy-way05/grocery-loyalty-dbms-sql-design">GitHub Repository</a>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <div class="section-inner">
+        <div class="section-title">
+          <h2>Problem Statement</h2>
+          <p>A grocery business needs a structured database that can support loyalty engagement, tier-based rewards, promotion planning, customer feedback analysis, and store-level reporting without relying on disconnected spreadsheets.</p>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><strong>8</strong><span>relational entities modeled</span></div>
+          <div class="kpi"><strong>1,307</strong><span>operational records profiled</span></div>
+          <div class="kpi"><strong>4</strong><span>SQL analysis modules delivered</span></div>
+          <div class="kpi"><strong>15+</strong><span>portfolio-grade deliverables</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="insights">
+      <div class="section-inner">
+        <div class="section-title">
+          <h2>Executive Insights</h2>
+          <p>The database profile shows where the loyalty ecosystem is strongest and where business leaders can focus next.</p>
+        </div>
+        <div class="grid">
+          <div class="panel">
+            <h3>Entity Volume Profile</h3>
+            <div class="bars">
+              <div class="bar-row"><span>Customers</span><div class="track"><div class="fill" style="width:100%"></div></div><strong>1,000</strong></div>
+              <div class="bar-row"><span>Loyalty Accounts</span><div class="track"><div class="fill" style="width:21.2%"></div></div><strong>212</strong></div>
+              <div class="bar-row"><span>Promotions</span><div class="track"><div class="fill" style="width:3.6%"></div></div><strong>36</strong></div>
+              <div class="bar-row"><span>Rewards</span><div class="track"><div class="fill" style="width:2.8%"></div></div><strong>28</strong></div>
+              <div class="bar-row"><span>Reviews</span><div class="track"><div class="fill" style="width:2%"></div></div><strong>20</strong></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Analyst Interpretation</h3>
+            <ul>
+              <li>Loyalty penetration is approximately <strong>21.2%</strong> if each account maps to one customer.</li>
+              <li>The model averages <strong>7.2 promotions per store</strong>, making campaign planning a real operational lever.</li>
+              <li>The rewards catalog averages <strong>9.3 reward options per tier</strong>, enough to support differentiated loyalty strategy.</li>
+              <li>Review volume is light at <strong>20 reviews</strong> against 1,000 customers, suggesting a feedback-capture opportunity.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>Performance Ratios</h3>
+            <div class="bars">
+              <div class="bar-row"><span>Loyalty/customer ratio</span><div class="track"><div class="fill" style="width:21.2%"></div></div><strong>21.2%</strong></div>
+              <div class="bar-row"><span>Avg promos/store</span><div class="track"><div class="fill" style="width:72%"></div></div><strong>7.2</strong></div>
+              <div class="bar-row"><span>Avg rewards/tier</span><div class="track"><div class="fill" style="width:93%"></div></div><strong>9.3</strong></div>
+              <div class="bar-row"><span>Avg reviews/store</span><div class="track"><div class="fill" style="width:40%"></div></div><strong>4.0</strong></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Recommended Decisions</h3>
+            <ul>
+              <li>Use tier reporting to identify underused levels and target enrollment campaigns.</li>
+              <li>Connect promotion history with review activity to test which campaigns create engagement.</li>
+              <li>Use reward-cost analysis to tune benefit generosity across tiers.</li>
+              <li>Introduce post-purchase review prompts to increase customer feedback density.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-inner">
+        <div class="section-title">
+          <h2>Relational Model</h2>
+          <p>The schema separates operational concepts cleanly, enabling join-based reporting without flattening the business into one fragile table.</p>
+        </div>
+        <div class="erd">
+          <div class="entity"><strong>CUSTOMER</strong><span>Customer profile and loyalty assignment.</span></div>
+          <div class="entity"><strong>LOYALTY</strong><span>Enrollment date, tier assignment, and point balance.</span></div>
+          <div class="entity"><strong>TIER</strong><span>Membership level and cost structure.</span></div>
+          <div class="entity"><strong>REWARD</strong><span>Benefits unlocked by loyalty tier.</span></div>
+          <div class="entity"><strong>STORE</strong><span>Retail store profile and square footage.</span></div>
+          <div class="entity"><strong>LOCATION</strong><span>Store city and state lookup.</span></div>
+          <div class="entity"><strong>PROMOTION</strong><span>Campaigns attached to stores.</span></div>
+          <div class="entity"><strong>REVIEW</strong><span>Customer feedback connected to stores.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-inner">
+        <div class="section-title">
+          <h2>SQL Analysis Modules</h2>
+          <p>The query suite is organized by decision area, making the database useful for technical review and business reporting.</p>
+        </div>
+        <div class="query-modules">
+          <div class="metric-card"><b>Loyalty Analysis</b><p>Calculates loyalty penetration, tier distribution, average points, and high-value customer segments.</p></div>
+          <div class="metric-card"><b>Store Performance</b><p>Combines locations, promotions, and reviews to compare store activity and footprint.</p></div>
+          <div class="metric-card"><b>Reward Strategy</b><p>Profiles reward depth, reward cost, and benefit coverage by loyalty tier.</p></div>
+          <div class="metric-card"><b>Customer Reviews</b><p>Measures review participation and connects feedback behavior to customers and tiers.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-inner">
+        <div class="section-title">
+          <h2>Approach & Outcomes</h2>
+          <p>The project turns a DBMS assignment into a professional database engineering and analytics case study.</p>
+        </div>
+        <div class="grid">
+          <div class="panel">
+            <h3>Approach</h3>
+            <ul>
+              <li>Profiled the original SQLite database and identified 8 core business entities.</li>
+              <li>Rewrote the schema into clean SQL with foreign keys, indexes, and constraints.</li>
+              <li>Grouped analysis queries into loyalty, store, reward, and review decision areas.</li>
+              <li>Excluded raw customer-style data from the public repo while preserving schema and analytical value.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>Outcome</h3>
+            <p>The deliverable demonstrates database design, SQL reporting, entity relationship thinking, business interpretation, and data privacy judgment in a format that can be reviewed quickly by hiring managers or technical evaluators.</p>
+          </div>
+        </div>
+        <div class="deliverables" style="margin-top:18px">
+          <a class="deliverable" href="schema/create_tables.sql">Schema SQL<span>Clean relational DDL</span></a>
+          <a class="deliverable" href="queries/loyalty_analysis.sql">Loyalty Queries<span>Participation and tier insights</span></a>
+          <a class="deliverable" href="outputs/executive-insights.md">Executive Insights<span>Quantitative business summary</span></a>
+          <a class="deliverable" href="docs/data-dictionary.md">Data Dictionary<span>Table and field documentation</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="section-inner">Built as a portfolio-ready SQL and database design dashboard for grocery loyalty analytics.</div>
+  </footer>
+</body>
+</html>
