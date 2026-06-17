@@ -1,9 +1,11 @@
 # Grocery Loyalty DBMS & SQL Analytics
 
-![SQL](https://img.shields.io/badge/SQL-Relational_Database-2563eb?style=for-the-badge)
-![SQLite](https://img.shields.io/badge/SQLite-Database_Design-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
-![ERD](https://img.shields.io/badge/ERD-Data_Modeling-f59e0b?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Portfolio_Ready-success?style=for-the-badge)
+<p>
+  <img src="assets/badges/sql.svg" alt="SQL Design">
+  <img src="assets/badges/sqlite.svg" alt="SQLite DBMS">
+  <img src="assets/badges/erd.svg" alt="ERD Modeling">
+  <img src="assets/badges/portfolio-ready.svg" alt="Portfolio Ready">
+</p>
 
 An advanced DBMS portfolio project designing and analyzing a grocery-store loyalty ecosystem across customers, stores, locations, promotions, rewards, loyalty tiers, and customer reviews.
 
