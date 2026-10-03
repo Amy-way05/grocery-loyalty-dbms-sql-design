@@ -1,386 +1,288 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Grocery Loyalty DBMS Strategy Cockpit</title>
-  <meta name="description" content="Interactive database design and SQL analytics dashboard for a grocery loyalty DBMS project.">
-  <style>
-    :root {
-      --ink: #101820;
-      --muted: #687586;
-      --line: #d8dee7;
-      --canvas: #f5f2eb;
-      --panel: #fffdf8;
-      --charcoal: #17202a;
-      --steel: #315a72;
-      --mint: #2a9d8f;
-      --gold: #c0842b;
-      --berry: #a23e62;
-      --shadow: 0 20px 60px rgba(16, 24, 32, .13);
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      color: var(--ink);
-      background: var(--canvas);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.5;
-    }
-    a { color: inherit; }
-    .hero {
-      min-height: 88vh;
-      display: grid;
-      align-items: center;
-      padding: 48px 22px;
-      color: #fff;
-      background:
-        linear-gradient(130deg, rgba(23, 32, 42, .98), rgba(49, 90, 114, .86)),
-        repeating-linear-gradient(90deg, rgba(255,255,255,.1) 0 1px, transparent 1px 92px),
-        repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 72px);
-    }
-    .wrap { width: min(1220px, 100%); margin: 0 auto; }
-    .hero-layout {
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 28px;
-      align-items: center;
-    }
-    .eyebrow {
-      margin: 0 0 16px;
-      color: rgba(255,255,255,.76);
-      font-size: .8rem;
-      font-weight: 900;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-    }
-    h1 {
-      max-width: 860px;
-      margin: 0;
-      font-size: clamp(3rem, 7vw, 6.2rem);
-      line-height: .94;
-      letter-spacing: 0;
-    }
-    .hero p.lede {
-      max-width: 720px;
-      margin: 24px 0 0;
-      color: rgba(255,255,255,.86);
-      font-size: clamp(1.04rem, 1.5vw, 1.28rem);
-    }
-    .schema-card {
-      border: 1px solid rgba(255,255,255,.2);
-      border-radius: 14px;
-      padding: 22px;
-      background: rgba(255,255,255,.08);
-      backdrop-filter: blur(10px);
-    }
-    .schema-node {
-      display: grid;
-      grid-template-columns: 108px 1fr;
-      gap: 12px;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255,255,255,.16);
-    }
-    .schema-node:last-child { border-bottom: 0; }
-    .schema-node b { color: white; }
-    .schema-node span { color: rgba(255,255,255,.72); font-size: .9rem; }
-    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
-    .btn {
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 18px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.35);
-      background: rgba(255,255,255,.1);
-      color: white;
-      text-decoration: none;
-      font-weight: 850;
-    }
-    .btn.primary { background: white; color: var(--charcoal); border-color: white; }
-    section { padding: 70px 22px; }
-    .title { max-width: 820px; margin-bottom: 26px; }
-    .title h2 {
-      margin: 0 0 10px;
-      font-size: clamp(2rem, 4vw, 3.2rem);
-      line-height: 1;
-      letter-spacing: 0;
-    }
-    .title p { margin: 0; color: var(--muted); font-size: 1.04rem; }
-    .scoreboard {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
-    .score, .panel, .entity, .query-card, .deliverable {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-    }
-    .score { padding: 20px; min-height: 148px; }
-    .score b { display: block; font-size: clamp(2rem, 4vw, 3rem); line-height: 1; color: var(--steel); }
-    .score span { display: block; margin-top: 10px; color: var(--muted); font-weight: 750; }
-    .workbench {
-      display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
-      gap: 18px;
-      align-items: start;
-    }
-    .panel { padding: 24px; }
-    .panel h3, .query-card h3 { margin: 0 0 12px; font-size: 1.16rem; }
-    .panel p, .panel li, .query-card p, .entity span { color: var(--muted); }
-    .panel ul { margin: 0; padding-left: 20px; }
-    .volume-bars { display: grid; gap: 13px; }
-    .bar {
-      display: grid;
-      grid-template-columns: 132px 1fr 64px;
-      gap: 12px;
-      align-items: center;
-      color: var(--muted);
-      font-size: .92rem;
-    }
-    .track { height: 13px; border-radius: 999px; background: #e8e1d5; overflow: hidden; }
-    .fill { height: 100%; background: linear-gradient(90deg, var(--steel), var(--mint)); border-radius: inherit; }
-    .model-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
-    .entity { padding: 18px; min-height: 136px; position: relative; overflow: hidden; }
-    .entity:before {
-      content: "";
-      position: absolute;
-      inset: 0 0 auto;
-      height: 5px;
-      background: var(--mint);
-    }
-    .entity b { color: var(--charcoal); }
-    .entity span { display: block; margin-top: 8px; font-size: .92rem; }
-    .query-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-    .tab {
-      min-height: 42px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 0 16px;
-      background: #fffaf0;
-      color: var(--ink);
-      font: inherit;
-      font-weight: 850;
-      cursor: pointer;
-    }
-    .tab.active { background: var(--charcoal); color: #fff; border-color: var(--charcoal); }
-    .query-card { padding: 24px; min-height: 270px; }
-    .sql {
-      margin-top: 18px;
-      padding: 18px;
-      border-radius: 10px;
-      background: #101820;
-      color: #d8fff8;
-      overflow-x: auto;
-      font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    }
-    .decision-grid, .deliverables {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
-    .query-card.small { min-height: 190px; }
-    .deliverable {
-      min-height: 124px;
-      padding: 20px;
-      text-decoration: none;
-      font-weight: 850;
-    }
-    .deliverable span { display: block; margin-top: 8px; color: var(--muted); font-weight: 650; font-size: .93rem; }
-    .footer { padding: 32px 22px; background: var(--charcoal); color: rgba(255,255,255,.72); }
-    @media (max-width: 960px) {
-      .hero-layout, .scoreboard, .workbench, .model-grid, .decision-grid, .deliverables { grid-template-columns: 1fr; }
-      .bar { grid-template-columns: 1fr; }
-      .hero { min-height: 82vh; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaign 18: What a $140 Coupon Effect Actually Looks Like</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #111111; --paper: #FFFFFF; --accent: #2546F0;
+    --muted: #B9B9B9; --muted-text: #8A8A8A; --line: #EAEAEA; --panel: #F7F7F8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 0 28px; }
+  .wrap-wide { max-width: 860px; margin: 0 auto; padding: 0 28px; }
+
+  header.masthead { padding: 80px 0 0 0; }
+  h1.headline {
+    font-size: 2.6rem; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em;
+    color: var(--ink); margin: 0 0 24px 0; max-width: 680px;
+  }
+  h1.headline .accent { color: var(--accent); }
+  .dek { font-size: 1.1rem; line-height: 1.6; color: #444; max-width: 580px; margin: 0 0 8px 0; }
+  .byline { font-size: 0.85rem; color: var(--muted-text); margin-top: 18px; }
+
+  .stat-strip {
+    display: flex; flex-wrap: wrap; margin-top: 50px; border-top: 1px solid var(--ink);
+  }
+  .stat { flex: 1; min-width: 150px; padding: 20px 24px 20px 0; border-right: 1px solid var(--line); }
+  .stat:last-child { border-right: none; }
+  .stat .num { font-size: 2rem; font-weight: 700; display: block; }
+  .stat .lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-text); margin-top: 6px; display: block; }
+
+  section { padding: 64px 0; border-bottom: 1px solid var(--line); }
+  section.panel { background: var(--panel); }
+  h2 {
+    font-size: 1.6rem; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em;
+    margin: 0 0 20px 0; max-width: 620px;
+  }
+  p.body { font-size: 1.05rem; line-height: 1.72; color: #333; margin-bottom: 18px; max-width: 640px; }
+  p.body b { color: var(--ink); font-weight: 700; }
+
+  .chart-frame { background: white; border: 1px solid var(--line); padding: 24px 22px 16px 22px; margin: 28px 0; }
+  .chart-caption { font-size: 0.8rem; color: var(--muted-text); margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; line-height: 1.5; }
+
+  .emphasis {
+    font-size: 1.3rem; font-weight: 600; line-height: 1.5; color: var(--ink);
+    margin: 30px 0; max-width: 600px;
+  }
+  .emphasis .accent { color: var(--accent); }
+
+  .tool-card { background: var(--panel); border: 1px solid var(--line); padding: 32px; margin-top: 28px; }
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-bottom: 26px; }
+  @media (max-width: 640px) { .tool-grid { grid-template-columns: 1fr; } }
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 0.82rem; color: #555; margin-bottom: 8px; font-weight: 500; }
+  .field .val { color: var(--accent); font-weight: 700; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; }
+  select {
+    width: 100%; background: white; color: var(--ink); border: 1px solid #CCC;
+    padding: 10px 12px; font-size: 0.95rem; font-family: inherit;
+  }
+  .result-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 26px; padding-top: 26px; border-top: 1px solid var(--line); }
+  .result { flex: 1; min-width: 140px; text-align: center; background: white; border: 1px solid var(--line); padding: 16px 10px; }
+  .result .v { font-size: 1.6rem; font-weight: 700; }
+  .result .l { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-text); margin-top: 4px; }
+  .verdict { margin-top: 18px; padding: 16px 18px; border-left: 3px solid var(--ink); font-size: 0.95rem; line-height: 1.55; background: white; }
+  .verdict.go { border-left-color: var(--accent); }
+  .verdict.hold { border-left-color: var(--muted); }
+
+  footer { padding: 40px 0 70px 0; font-size: 0.82rem; color: var(--muted-text); line-height: 1.7; }
+  footer a { color: var(--accent); }
+  .methodology { font-size: 0.85rem; color: #444; background: white; border: 1px solid var(--line); padding: 18px 20px; margin-top: 18px; line-height: 1.7; }
+</style>
 </head>
 <body>
-  <header class="hero">
-    <div class="wrap hero-layout">
-      <div>
-        <p class="eyebrow">Relational Design Strategy Cockpit</p>
-        <h1>Grocery Loyalty DBMS & SQL Analytics</h1>
-        <p class="lede">A database design and SQL analytics cockpit for a retail loyalty ecosystem, built to show relational thinking, business reporting, query design, and data privacy judgment.</p>
-        <div class="actions">
-          <a class="btn primary" href="#workbench">Open Workbench</a>
-          <a class="btn" href="schema/create_tables.sql">Schema SQL</a>
-          <a class="btn" href="https://github.com/Amy-way05/grocery-loyalty-dbms-sql-design">GitHub Repository</a>
-        </div>
-      </div>
-      <aside class="schema-card" aria-label="Core database relationships">
-        <div class="schema-node"><b>Customer</b><span>profile records, loyalty links, review authorship</span></div>
-        <div class="schema-node"><b>Loyalty</b><span>tier assignment, enrollment, point balance</span></div>
-        <div class="schema-node"><b>Store</b><span>location, promotions, customer reviews</span></div>
-        <div class="schema-node"><b>Reward</b><span>tier-based benefit structure and cost logic</span></div>
-      </aside>
+
+<header class="masthead">
+  <div class="wrap">
+    <h1 class="headline">This coupon campaign claimed a 78% lift.<br>The real number is <span class="accent mono">$140</span>.</h1>
+    <p class="dek">A causal analysis of a real promotion run by a U.S. grocery retailer, using propensity matching and difference in differences on 1.47 million real transactions.</p>
+    <div class="byline">Amrutha Ravikumar. Data: Dunnhumby, "The Complete Journey"</div>
+    <div class="stat-strip">
+      <div class="stat"><span class="num mono">1,133</span><span class="lbl">Households Exposed</span></div>
+      <div class="stat"><span class="num mono">214</span><span class="lbl">Redeemed a Coupon</span></div>
+      <div class="stat"><span class="num mono accent" style="color:var(--accent)">$140</span><span class="lbl">True Incremental Spend</span></div>
+      <div class="stat"><span class="num mono">+1,094%</span><span class="lbl">Campaign ROI</span></div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main>
-    <section>
-      <div class="wrap">
-        <div class="title">
-          <h2>Operational Scale</h2>
-          <p>The dashboard profiles the original database at an aggregate level while keeping raw customer-style records out of the public repo.</p>
+<section>
+  <div class="wrap">
+    <h2>The number everyone would have reported is wrong</h2>
+    <p class="body">If this analysis were run the way most retail dashboards run it, comparing the spending of people who redeemed a coupon against everyone who didn't, the headline would write itself: <b>a 78% increase in spend.</b> That figure would make it into a slide deck, a board update, perhaps a case study. It would also be almost entirely wrong.</p>
+    <p class="body">The problem surfaces the moment you look at these two groups <i>before</i> the campaign ever launched.</p>
+    <div class="chart-frame">
+      <svg viewBox="0 0 640 260" width="100%" xmlns="http://www.w3.org/2000/svg"><text x="0" y="28" font-size="11" fill="#8A8A8A" font-weight="600" text-anchor="start" font-family="Inter, -apple-system, sans-serif">AVG SPEND, 8 WEEKS BEFORE THE CAMPAIGN BEGAN</text><rect x="230" y="60" width="282.3" height="44" fill="#2546F0"/><text x="216" y="87.0" font-size="13" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">Would be redeemers</text><text x="526.2631428571428" y="89.0" font-size="20" fill="#2546F0" font-weight="700" text-anchor="start" font-family="'IBM Plex Mono', monospace">$599</text><rect x="230" y="148" width="182.7" height="44" fill="#111111"/><text x="216" y="175.0" font-size="13" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">Would be non redeemers</text><text x="426.7351428571429" y="177.0" font-size="20" fill="#111111" font-weight="700" text-anchor="start" font-family="'IBM Plex Mono', monospace">$388</text><line x1="230" y1="50" x2="230" y2="208" stroke="#EAEAEA" stroke-width="1"/><text x="230" y="228" font-size="11" fill="#2546F0" font-weight="600" text-anchor="start" font-family="Inter, -apple-system, sans-serif">54.5% GAP, BEFORE EITHER GROUP EVER SAW THIS CAMPAIGN</text></svg>
+      <div class="chart-caption">Average household grocery spend in the eight weeks preceding the campaign, before any coupon had been issued or redeemed.</div>
+    </div>
+    <p class="emphasis">They are not an average customer converted by a coupon. They are a pre-existing heavy shopper who also happened to clip one.</p>
+    <p class="body">People who went on to redeem this coupon were already spending 54% more than everyone else, weeks before the promotion existed. Comparing their post-campaign spend to the rest of the base doesn't measure what the campaign did. It measures who these people already were.</p>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="wrap">
+    <h2>What is the campaign actually worth?</h2>
+    <p class="body">To isolate the campaign's true effect, each redeemer was matched to a non-redeemer with a near-identical pre-campaign spending history, a technique called <b>propensity score matching</b>. With comparable households on both sides, the change in spending from before the campaign to during it was measured for each group. The difference between those two changes is the effect the campaign actually caused, a method known as <b>difference in differences</b>.</p>
+    <div class="chart-frame">
+      <svg viewBox="0 0 640 300" width="100%" xmlns="http://www.w3.org/2000/svg"><line x1="60" y1="230" x2="580" y2="230" stroke="#111111" stroke-width="1"/><rect x="170" y="99.6" width="120" height="130.4" fill="none" stroke="#B9B9B9" stroke-width="1.5" stroke-dasharray="5,4"/><text x="230.0" y="83.56521739130434" font-size="26" fill="#8A8A8A" font-weight="700" text-anchor="middle" font-family="'IBM Plex Mono', monospace">$321</text><text x="230.0" y="256" font-size="10.5" fill="#8A8A8A" font-weight="600" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">NAIVE COMPARISON</text><rect x="400" y="173.1" width="120" height="56.9" fill="#2546F0"/><text x="460.0" y="157.10953010533615" font-size="26" fill="#2546F0" font-weight="700" text-anchor="middle" font-family="'IBM Plex Mono', monospace">$140</text><text x="460.0" y="256" font-size="10.5" fill="#111111" font-weight="600" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">CAUSAL ESTIMATE</text><line x1="536" y1="154.6" x2="536" y2="191.7" stroke="#111111" stroke-width="1"/><line x1="531" y1="154.6" x2="541" y2="154.6" stroke="#111111" stroke-width="1"/><line x1="531" y1="191.7" x2="541" y2="191.7" stroke="#111111" stroke-width="1"/><text x="547" y="177.10749815770083" font-size="10" fill="#8A8A8A" font-weight="400" text-anchor="start" font-family="Inter, -apple-system, sans-serif">95% CI</text></svg>
+      <div class="chart-caption">Spend lift per household: the naive estimate (dashed) versus the bias corrected causal estimate, with its 95% confidence interval.</div>
+    </div>
+    <p class="body">The corrected effect is <b>$139.99 in incremental spend per household</b>, statistically robust (p is less than 0.0001, Cohen's d equals 0.58). Set against a coupon cost of just $2,509 across all 214 redeemers, that is an estimated <b>1,094% return</b>. The campaign worked. It simply worked at roughly 44 cents on every naive dollar claimed.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>The households who needed it most responded the most</h2>
+    <p class="body">Breaking the corrected effect down by income tells a story that is both a business insight and, unusually, a socially welcome one.</p>
+    <div class="chart-frame">
+      <svg viewBox="0 0 680 420" width="100%" xmlns="http://www.w3.org/2000/svg"><line x1="380" y1="20" x2="380" y2="386" stroke="#111111" stroke-width="1"/><rect x="306.9" y="26.5" width="73.1" height="16" fill="#B9B9B9"/><text x="126" y="39.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">250K+</text><text x="296.94" y="43.5" font-size="12" fill="#8A8A8A" font-weight="600" text-anchor="end" font-family="'IBM Plex Mono', monospace">$-146</text><rect x="376.0" y="56.5" width="4.0" height="16" fill="#B9B9B9"/><text x="126" y="69.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">175 to 199K</text><text x="365.995" y="73.5" font-size="12" fill="#8A8A8A" font-weight="600" text-anchor="end" font-family="'IBM Plex Mono', monospace">$-8</text><rect x="380.0" y="86.5" width="10.5" height="16" fill="#2546F0"/><text x="126" y="99.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">25 to 34K</text><text x="400.515" y="103.5" font-size="12" fill="#2546F0" font-weight="600" text-anchor="start" font-family="'IBM Plex Mono', monospace">$+21</text><rect x="380.0" y="116.5" width="44.2" height="16" fill="#2546F0"/><text x="126" y="129.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">15 to 24K</text><text x="434.24" y="133.5" font-size="12" fill="#2546F0" font-weight="600" text-anchor="start" font-family="'IBM Plex Mono', monospace">$+88</text><rect x="380.0" y="146.5" width="41.9" height="16" fill="#2546F0"/><text x="126" y="159.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">35 to 49K</text><text x="431.9" y="163.5" font-size="12" fill="#2546F0" font-weight="600" text-anchor="start" font-family="'IBM Plex Mono', monospace">$+84</text><rect x="380.0" y="176.5" width="53.5" height="16" fill="#2546F0"/><text x="126" y="189.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">50 to 74K</text><text x="443.47" y="193.5" font-size="12" fill="#2546F0" font-weight="600" text-anchor="start" font-family="'IBM Plex Mono', monospace">$+107</text><rect x="380.0" y="206.5" width="62.8" height="16" fill="#2546F0"/><text x="126" y="219.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">125 to 149K</text><text x="452.775" y="223.5" font-size="12" fill="#2546F0" font-weight="600" text-anchor="start" font-family="'IBM Plex Mono', monospace">$+126</text><rect x="380.0" y="236.5" width="71.0" height="16" fill="#2546F0"/><text x="126" y="249.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">75 to 99K</text><text x="461.03499999999997" y="253.5" font-size="12" fill="#2546F0" font-weight="600" text-anchor="start" font-family="'IBM Plex Mono', monospace">$+142</text><rect x="380.0" y="266.5" width="92.2" height="16" fill="#2546F0"/><text x="126" y="279.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">200 to 249K</text><text x="482.21500000000003" y="283.5" font-size="12" fill="#2546F0" font-weight="600" text-anchor="start" font-family="'IBM Plex Mono', monospace">$+184</text><rect x="380.0" y="296.5" width="117.0" height="16" fill="#2546F0"/><text x="126" y="309.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">100 to 124K</text><text x="507.0" y="313.5" font-size="12" fill="#2546F0" font-weight="600" text-anchor="start" font-family="'IBM Plex Mono', monospace">$+234</text><rect x="380.0" y="326.5" width="121.9" height="16" fill="#2546F0"/><text x="126" y="339.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">Under 15K</text><text x="511.945" y="343.5" font-size="12" fill="#2546F0" font-weight="600" text-anchor="start" font-family="'IBM Plex Mono', monospace">$+244</text><rect x="380.0" y="356.5" width="129.9" height="16" fill="#2546F0"/><text x="126" y="369.5" font-size="12" fill="#111111" font-weight="400" text-anchor="end" font-family="Inter, -apple-system, sans-serif">150 to 174K</text><text x="519.875" y="373.5" font-size="12" fill="#2546F0" font-weight="600" text-anchor="start" font-family="'IBM Plex Mono', monospace">$+260</text></svg>
+      <div class="chart-caption">Incremental spend by household income bracket, redeemers only.</div>
+    </div>
+    <p class="body">Households earning under $15,000 a year showed <b>$244</b> in incremental spend, among the strongest response of any segment, and households with three or more children showed an equally strong <b>$244</b> response. The highest income households showed no meaningful lift at all. Larger, lower income households are the most price sensitive shoppers in the base, and a well targeted coupon moves them furthest. The most profitable way to target this campaign and the most equitable way to target it are the same strategy.</p>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="wrap">
+    <h2>Does it last, or is it just pantry loading?</h2>
+    <p class="body">The real test of a promotion built to earn loyalty isn't what happens while the discount is live. It's what happens the week after, once it's gone.</p>
+    <div class="chart-frame">
+      <svg viewBox="0 0 560 280" width="100%" xmlns="http://www.w3.org/2000/svg"><line x1="60" y1="220" x2="500" y2="220" stroke="#111111" stroke-width="1"/><rect x="140" y="78.3" width="120" height="141.7" fill="#2546F0"/><text x="200.0" y="64.33333333333331" font-size="22" fill="#2546F0" font-weight="700" text-anchor="middle" font-family="'IBM Plex Mono', monospace">$140</text><text x="200.0" y="244" font-size="10.5" fill="#111111" font-weight="600" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">DURING THE CAMPAIGN</text><rect x="340" y="197.6" width="120" height="22.4" fill="#B9B9B9"/><text x="400.0" y="183.5948282020144" font-size="22" fill="#8A8A8A" font-weight="700" text-anchor="middle" font-family="'IBM Plex Mono', monospace">$22</text><text x="400.0" y="244" font-size="10.5" fill="#111111" font-weight="600" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">EQUAL WINDOW AFTER IT ENDED</text><text x="400.0" y="262" font-size="10.5" fill="#2546F0" font-weight="700" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">ONLY 16% OF THE LIFT REMAINS</text></svg>
+      <div class="chart-caption">Causal spend lift during the campaign versus an equal length window immediately afterward.</div>
+    </div>
+    <p class="body">Only <b>16%</b> of the lift survives once the promotion ends. This is consistent with pantry loading rather than habit formation. A single large campaign is unlikely to build lasting engagement on its own. A steadier cadence of smaller, rotating promotions would likely produce more durable results per dollar spent.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>They didn't just buy the discounted item</h2>
+    <p class="body">A common risk with coupon promotions is that shoppers buy only the promoted product and nothing else. The basket data says otherwise here.</p>
+    <div class="chart-frame">
+      <svg viewBox="0 0 680 360" width="100%" xmlns="http://www.w3.org/2000/svg"><line x1="60" y1="270" x2="640" y2="270" stroke="#111111" stroke-width="1"/><rect x="70" y="121.1" width="32" height="148.9" fill="#B9B9B9"/><rect x="106" y="40.0" width="32" height="230.0" fill="#2546F0"/><text x="104" y="290" font-size="11" fill="#111111" font-weight="400" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">Grocery</text><rect x="165" y="228.7" width="32" height="41.3" fill="#B9B9B9"/><rect x="201" y="208.2" width="32" height="61.8" fill="#2546F0"/><text x="199" y="290" font-size="11" fill="#111111" font-weight="400" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">Drug / GM</text><rect x="260" y="248.0" width="32" height="22.0" fill="#B9B9B9"/><rect x="296" y="231.9" width="32" height="38.1" fill="#2546F0"/><text x="294" y="290" font-size="11" fill="#111111" font-weight="400" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">Fuel</text><rect x="355" y="250.3" width="32" height="19.7" fill="#B9B9B9"/><rect x="391" y="240.7" width="32" height="29.3" fill="#2546F0"/><text x="389" y="290" font-size="11" fill="#111111" font-weight="400" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">Produce</text><rect x="450" y="250.6" width="32" height="19.4" fill="#B9B9B9"/><rect x="486" y="240.9" width="32" height="29.1" fill="#2546F0"/><text x="484" y="290" font-size="11" fill="#111111" font-weight="400" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">Meat</text><rect x="545" y="259.2" width="32" height="10.8" fill="#B9B9B9"/><rect x="581" y="255.6" width="32" height="14.4" fill="#2546F0"/><text x="579" y="290" font-size="11" fill="#111111" font-weight="400" text-anchor="middle" font-family="Inter, -apple-system, sans-serif">Deli</text><rect x="70" y="10" width="14" height="14" fill="#B9B9B9"/><text x="90" y="21" font-size="10.5" fill="#111111" font-weight="600" text-anchor="start" font-family="Inter, -apple-system, sans-serif">NON REDEEMERS</text><rect x="230" y="10" width="14" height="14" fill="#2546F0"/><text x="250" y="21" font-size="10.5" fill="#111111" font-weight="600" text-anchor="start" font-family="Inter, -apple-system, sans-serif">REDEEMERS</text></svg>
+      <div class="chart-caption">Total category spend during the campaign window, by redemption status, across the six largest departments.</div>
+    </div>
+    <p class="body">Redeemers shopped <b>9.3 distinct departments</b> on average during the campaign, against <b>8.4</b> for non-redeemers. The coupon produced a genuine cross sell halo: it drew people toward a wider basket, not merely toward the one item on sale.</p>
+  </div>
+</section>
+
+<section class="panel" id="tool">
+  <div class="wrap-wide">
+    <h2>A targeting tool a marketing team could use tomorrow morning</h2>
+    <p class="body">Five findings are useful. A working tool is better. This is an uplift model trained on this campaign's real household data, using a two model (T-learner) approach: one model learns how redeemers' spending changed, a second learns how non-redeemers' spending changed under identical conditions, and the gap between their predictions for any given household profile is that household's personalized expected uplift from being targeted.</p>
+
+    <div class="tool-card">
+      <div class="tool-grid">
+        <div>
+          <div class="field">
+            <label>Typical 8 week grocery spend: <span class="val mono" id="spendVal">$400</span></label>
+            <input type="range" id="spend" min="50" max="2000" value="400" step="25">
+          </div>
+          <div class="field">
+            <label>Visits in that window: <span class="val mono" id="visitsVal">12</span></label>
+            <input type="range" id="visits" min="1" max="40" value="12" step="1">
+          </div>
+          <div class="field">
+            <label>Household income bracket</label>
+            <select id="income">
+              <option value="7.5">Under $15K</option>
+              <option value="19.5">$15K to $24K</option>
+              <option value="29.5">$25K to $34K</option>
+              <option value="42">$35K to $49K</option>
+              <option value="62" selected>$50K to $74K</option>
+              <option value="87">$75K to $99K</option>
+              <option value="112">$100K to $124K</option>
+              <option value="137">$125K to $149K</option>
+              <option value="162">$150K to $174K</option>
+              <option value="187">$175K to $199K</option>
+              <option value="225">$200K to $249K</option>
+              <option value="275">$250K+</option>
+            </select>
+          </div>
         </div>
-        <div class="scoreboard">
-          <div class="score"><b>8</b><span>business entities modeled</span></div>
-          <div class="score"><b>1,307</b><span>operational records profiled</span></div>
-          <div class="score"><b>21.2%</b><span>loyalty account ratio</span></div>
-          <div class="score"><b>4</b><span>SQL decision modules</span></div>
+        <div>
+          <div class="field">
+            <label>Household size: <span class="val mono" id="hhVal">2</span></label>
+            <input type="range" id="hhsize" min="1" max="8" value="2" step="1">
+          </div>
+          <div class="field">
+            <label>Children in household</label>
+            <select id="kids">
+              <option value="0" selected>0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3+</option>
+            </select>
+          </div>
         </div>
       </div>
-    </section>
 
-    <section id="workbench">
-      <div class="wrap">
-        <div class="title">
-          <h2>Database Workbench</h2>
-          <p>Instead of a text-only report, the workbench shows data volume, decision interpretation, and the query logic behind each insight area.</p>
-        </div>
-        <div class="workbench">
-          <article class="panel">
-            <h3>Entity Volume Profile</h3>
-            <div class="volume-bars">
-              <div class="bar"><span>Customers</span><div class="track"><div class="fill" style="width:100%"></div></div><strong>1,000</strong></div>
-              <div class="bar"><span>Loyalty</span><div class="track"><div class="fill" style="width:21.2%"></div></div><strong>212</strong></div>
-              <div class="bar"><span>Promotions</span><div class="track"><div class="fill" style="width:3.6%"></div></div><strong>36</strong></div>
-              <div class="bar"><span>Rewards</span><div class="track"><div class="fill" style="width:2.8%"></div></div><strong>28</strong></div>
-              <div class="bar"><span>Reviews</span><div class="track"><div class="fill" style="width:2%"></div></div><strong>20</strong></div>
-            </div>
-          </article>
-          <article class="panel">
-            <h3>What This Reveals</h3>
-            <ul>
-              <li>The loyalty base is meaningful but leaves a large enrollment opportunity across 1,000 customer records.</li>
-              <li>Promotions average 7.2 per store, making campaign strategy a mature reporting area.</li>
-              <li>Rewards average 9.3 options per tier, supporting tier-based benefit differentiation.</li>
-              <li>Review volume is low relative to customer count, so feedback capture should become an operating priority.</li>
-            </ul>
-          </article>
-        </div>
+      <div class="result-row">
+        <div class="result"><div class="v mono" id="upliftOut" style="color:var(--accent)">$0</div><div class="l">Predicted Uplift</div></div>
+        <div class="result"><div class="v mono" id="costOut">$11.73</div><div class="l">Est. Coupon Cost</div></div>
+        <div class="result"><div class="v mono" id="roiOut">0%</div><div class="l">Expected ROI</div></div>
       </div>
-    </section>
+      <div class="verdict go" id="verdict">Adjust the inputs above to see a live targeting recommendation.</div>
+    </div>
 
-    <section>
-      <div class="wrap">
-        <div class="title">
-          <h2>Relational Model Map</h2>
-          <p>The model is intentionally normalized so reporting can answer cross-functional questions without turning the database into one brittle spreadsheet.</p>
-        </div>
-        <div class="model-grid">
-          <div class="entity"><b>CUSTOMER</b><span>1,000 profile records connected to loyalty and reviews.</span></div>
-          <div class="entity"><b>LOYALTY</b><span>212 accounts with points and tier assignment.</span></div>
-          <div class="entity"><b>TIER</b><span>3 membership levels that organize benefit strategy.</span></div>
-          <div class="entity"><b>REWARD</b><span>28 rewards attached to loyalty tier rules.</span></div>
-          <div class="entity"><b>STORE</b><span>5 stores connected to locations, promotions, and reviews.</span></div>
-          <div class="entity"><b>LOCATION</b><span>3 geographic records supporting store footprint reporting.</span></div>
-          <div class="entity"><b>PROMOTION</b><span>36 campaigns tied to store-level marketing activity.</span></div>
-          <div class="entity"><b>REVIEW</b><span>20 feedback records for customer engagement analysis.</span></div>
-        </div>
-      </div>
-    </section>
+    <div class="methodology">
+      <b>Methodology.</b> Uplift coefficients were estimated via two separate ordinary least squares models fit on the matched causal sample: one on redeemers, one on non-redeemers, each regressing spend change on pre-period spend, pre-period visit count, household income midpoint, household size, and number of children. The uplift score for a given profile is the difference between the two models' predictions. Coefficients are fixed and computed from the full analysis. This calculator runs entirely in your browser.
+    </div>
+  </div>
+</section>
 
-    <section>
-      <div class="wrap">
-        <div class="title">
-          <h2>Interactive SQL Module</h2>
-          <p>Select a decision area to see what the SQL is designed to answer and the kind of output it supports.</p>
-        </div>
-        <div class="query-tabs">
-          <button class="tab active" data-module="loyalty">Loyalty</button>
-          <button class="tab" data-module="store">Store Performance</button>
-          <button class="tab" data-module="reward">Reward Strategy</button>
-          <button class="tab" data-module="review">Reviews</button>
-        </div>
-        <article class="query-card" id="queryCard">
-          <h3>Loyalty participation and tier behavior</h3>
-          <p>Measures loyalty penetration, tier distribution, average points, and high-value customer segments.</p>
-          <pre class="sql">SELECT tier_level, COUNT(*) AS accounts, AVG(loyalty_points) AS avg_points
-FROM loyalty JOIN tier USING (tier_id)
-GROUP BY tier_level
-ORDER BY accounts DESC;</pre>
-        </article>
-      </div>
-    </section>
+<footer>
+  <div class="wrap">
+    <p><b>Data source.</b> Dunnhumby, "The Complete Journey," 1,469,307 real transactions from 2,500 U.S. households over two years, including genuine campaign exposure and coupon redemption records.</p>
+    <p><b>Methods.</b> Propensity score matching (nearest neighbor, caliper equals 0.05) validated by covariate balance testing, difference in differences estimation, T-learner uplift modeling.</p>
+    <p>Amrutha Ravikumar. M.P.S. Analytics, Northeastern University, Roux Institute. 2026 &nbsp;&middot;&nbsp; <a href="https://github.com/Amy-way05/grocery-loyalty-dbms-sql-design">View the code on GitHub</a></p>
+  </div>
+</footer>
 
-    <section>
-      <div class="wrap">
-        <div class="title">
-          <h2>Decision Pathways</h2>
-          <p>The outcome is not just a schema; it is a set of decisions that the database makes possible.</p>
-        </div>
-        <div class="decision-grid">
-          <article class="query-card small"><h3>Grow Loyalty</h3><p>Use the 21.2% account ratio as a baseline for enrollment campaigns and tier migration targets.</p></article>
-          <article class="query-card small"><h3>Optimize Campaigns</h3><p>Compare store promotion volume with review activity to identify campaigns that create engagement.</p></article>
-          <article class="query-card small"><h3>Refine Rewards</h3><p>Evaluate reward depth and cost by tier to avoid underpowered or overly generous benefit structures.</p></article>
-          <article class="query-card small"><h3>Increase Feedback</h3><p>Use review participation as a signal for post-purchase feedback workflow improvement.</p></article>
-        </div>
-      </div>
-    </section>
+<script>
+  const spend = document.getElementById('spend');
+  const visits = document.getElementById('visits');
+  const income = document.getElementById('income');
+  const hhsize = document.getElementById('hhsize');
+  const kids = document.getElementById('kids');
+  const spendVal = document.getElementById('spendVal');
+  const visitsVal = document.getElementById('visitsVal');
+  const hhVal = document.getElementById('hhVal');
+  const upliftOut = document.getElementById('upliftOut');
+  const costOut = document.getElementById('costOut');
+  const roiOut = document.getElementById('roiOut');
+  const verdict = document.getElementById('verdict');
 
-    <section>
-      <div class="wrap">
-        <div class="title">
-          <h2>Deliverables</h2>
-          <p>The repo is structured as a technical database portfolio asset with business interpretation layered on top.</p>
-        </div>
-        <div class="deliverables">
-          <a class="deliverable" href="schema/create_tables.sql">Schema SQL<span>Clean DDL with constraints and indexes.</span></a>
-          <a class="deliverable" href="queries/loyalty_analysis.sql">Loyalty Queries<span>Participation, tiers, and points.</span></a>
-          <a class="deliverable" href="docs/data-dictionary.md">Data Dictionary<span>Documented entities and fields.</span></a>
-          <a class="deliverable" href="outputs/executive-insights.md">Executive Insights<span>Quantified business interpretation.</span></a>
-        </div>
-      </div>
-    </section>
-  </main>
+  const COEF = {
+    intercept: 83.6407, pre_spend: 0.1648, pre_visits: -1.3944,
+    income_num: -0.3634, household_size: -19.3854, kids_count_num: 34.3229
+  };
+  const AVG_COST = 11.73;
 
-  <footer class="footer">
-    <div class="wrap">Built as a database strategy cockpit for grocery loyalty SQL analytics.</div>
-  </footer>
+  function calc() {
+    const s = parseFloat(spend.value);
+    const v = parseFloat(visits.value);
+    const inc = parseFloat(income.value);
+    const hh = parseFloat(hhsize.value);
+    const k = parseFloat(kids.value);
+    spendVal.textContent = '$' + s.toLocaleString();
+    visitsVal.textContent = v;
+    hhVal.textContent = hh;
+    let uplift = COEF.intercept + COEF.pre_spend*s + COEF.pre_visits*v +
+                 COEF.income_num*inc + COEF.household_size*hh + COEF.kids_count_num*k;
+    const roi = ((uplift - AVG_COST) / AVG_COST) * 100;
+    upliftOut.textContent = '$' + uplift.toFixed(0);
+    costOut.textContent = '$' + AVG_COST.toFixed(2);
+    roiOut.textContent = (roi>=0?'+':'') + roi.toFixed(0) + '%';
+    roiOut.style.color = roi >= 0 ? 'var(--accent)' : '#999';
+    if (uplift > AVG_COST * 1.5) {
+      verdict.className = 'verdict go';
+      verdict.innerHTML = '<b>Target this household.</b> Predicted uplift of $' + uplift.toFixed(0) +
+        ' comfortably exceeds the typical coupon cost of $' + AVG_COST.toFixed(2) +
+        ', for an expected return of ' + (roi>=0?'+':'') + roi.toFixed(0) + '%.';
+    } else {
+      verdict.className = 'verdict hold';
+      verdict.innerHTML = '<b>Lower priority for this campaign.</b> Predicted uplift of $' +
+        uplift.toFixed(0) + ' is close to or below the break even threshold. Consider a ' +
+        'lighter touch or lower cost offer for this profile instead.';
+    }
+  }
+  [spend, visits, income, hhsize, kids].forEach(el => el.addEventListener('input', calc));
+  calc();
+</script>
 
-  <script>
-    const modules = {
-      loyalty: {
-        title: "Loyalty participation and tier behavior",
-        body: "Measures loyalty penetration, tier distribution, average points, and high-value customer segments.",
-        sql: "SELECT tier_level, COUNT(*) AS accounts, AVG(loyalty_points) AS avg_points\\nFROM loyalty JOIN tier USING (tier_id)\\nGROUP BY tier_level\\nORDER BY accounts DESC;"
-      },
-      store: {
-        title: "Store footprint, campaigns, and review activity",
-        body: "Combines stores, locations, promotions, and reviews to compare operating activity across the retail footprint.",
-        sql: "SELECT store_name, COUNT(DISTINCT promo_id) AS promotions, COUNT(DISTINCT review_id) AS reviews\\nFROM store\\nLEFT JOIN promotion USING (store_id)\\nLEFT JOIN review USING (store_id)\\nGROUP BY store_name\\nORDER BY promotions + reviews DESC;"
-      },
-      reward: {
-        title: "Reward depth and cost by tier",
-        body: "Profiles reward availability and cost structure so benefit strategy can be tuned by loyalty level.",
-        sql: "SELECT tier_level, COUNT(reward_id) AS reward_count, AVG(reward_cost) AS avg_cost\\nFROM tier LEFT JOIN reward USING (tier_id)\\nGROUP BY tier_level\\nORDER BY reward_count DESC;"
-      },
-      review: {
-        title: "Customer feedback participation",
-        body: "Measures review coverage and connects feedback behavior to customer and loyalty records.",
-        sql: "SELECT COUNT(DISTINCT review.customer_id) AS reviewing_customers, COUNT(DISTINCT customer.customer_id) AS total_customers\\nFROM customer LEFT JOIN review USING (customer_id);"
-      }
-    };
-    const tabs = document.querySelectorAll(".tab");
-    const card = document.querySelector("#queryCard");
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        tabs.forEach((item) => item.classList.remove("active"));
-        tab.classList.add("active");
-        const mod = modules[tab.dataset.module];
-        card.innerHTML = `<h3>${mod.title}</h3><p>${mod.body}</p><pre class="sql">${mod.sql}</pre>`;
-      });
-    });
-  </script>
 </body>
 </html>
