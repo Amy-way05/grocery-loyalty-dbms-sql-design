@@ -1,0 +1,2 @@
+campaign_id,exposed_households,redeemed_households,naive_lift_pct,pre_period_selection_bias_pct,matched_pairs,did_causal_estimate_dollars,did_cohen_d,did_p_value,did_ci_lower,did_ci_upper,visit_frequency_did,coupon_cost_total,incremental_revenue_total,campaign_roi_pct
+18,1133,214,78.18,54.46,213,139.99,0.584,0.0,94.35,185.64,2.704,2509.23,29958.35,1093.9
